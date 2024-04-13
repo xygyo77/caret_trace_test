@@ -1,0 +1,11 @@
+<launch>
+  <node name="test_intra" exec="test_intra" pkg="rt2_844_test" output="screen" />
+  <node name="test_lifecycle_client" exec="test_lifecycle_client" pkg="rt2_844_test" output="screen" />
+  <node name="test_lifecycle_node" exec="test_lifecycle_node" pkg="rt2_844_test" output="screen" />
+  <node name="test_ping" exec="test_ping" pkg="rt2_844_test" output="screen" />
+  <node name="test_pong" exec="test_pong" pkg="rt2_844_test" output="screen" />
+  <node name="test_publisher" exec="test_publisher" pkg="rt2_844_test" output="screen" />
+  <node name="test_service_ping" exec="test_service_ping" pkg="rt2_844_test" output="screen" />
+  <node name="test_service_pong" exec="test_service_pong" pkg="rt2_844_test" output="screen" />
+  <node name="test_timer" exec="test_timer" pkg="rt2_844_test" output="screen" />
+</launch>
