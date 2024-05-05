@@ -1,6 +1,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
+constexpr int sub_num = 5;
+
 class IntraProcessCommunication : public rclcpp::Node
 {
 public:
@@ -9,7 +11,7 @@ public:
     publisher_ = this->create_publisher<std_msgs::msg::String>("topic", rclcpp::QoS(10).transient_local().durability_volatile());
     
     // 複数のsubscriberを作成する
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < sub_num; ++i) {
         auto subscription_callback = [this, i](const std_msgs::msg::String::SharedPtr msg) {
             RCLCPP_INFO(this->get_logger(), "Subscriber %d received message: '%s'", i, msg->data.c_str());
         };
@@ -19,7 +21,7 @@ public:
 
     // 一定間隔でメッセージをパブリッシュするタイマーを作成
     timer_ = this->create_wall_timer(
-      std::chrono::milliseconds(500),
+      std::chrono::milliseconds(1000),
       [this]() {
         auto message = std_msgs::msg::String();
         message.data = "Hello, world!";

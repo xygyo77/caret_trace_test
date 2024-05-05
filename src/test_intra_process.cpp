@@ -24,6 +24,16 @@
 
 using namespace std::chrono_literals;
 
+static bool is_iron_or_later() {
+  const char* ros_distro = std::getenv("ROS_DISTRO");
+  if (ros_distro[0] >= "iron"[0]) {
+    std::cout << "[ROS2 DISTRO : " << ros_distro << "] TRUE" << std::endl;
+    return true;
+  }
+  std::cout << "[ROS2 DISTRO : " << ros_distro << "] FALSE" << std::endl;
+  return false;
+}
+
 // Node that produces messages.
 struct Producer : public rclcpp::Node
 {
@@ -77,6 +87,8 @@ struct Consumer : public rclcpp::Node
 int main(int argc, char * argv[])
 {
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+  is_iron_or_later();
+
   rclcpp::init(argc, argv);
   rclcpp::executors::SingleThreadedExecutor executor;
 

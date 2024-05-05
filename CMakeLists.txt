@@ -182,6 +182,22 @@ if(1)
     ${std_msgs_TARGETS}
   )
 
+  add_executable(test_subscriber
+    src/test_subscriber.cpp
+  )
+  target_link_libraries(test_subscriber PRIVATE
+    rclcpp::rclcpp
+    ${std_msgs_TARGETS}
+  )
+
+  add_executable(test_node_only
+    src/test_node_only.cpp
+  )
+  target_link_libraries(test_node_only PRIVATE
+    rclcpp::rclcpp
+    ${std_msgs_TARGETS}
+  )
+
   install(TARGETS
     test_intra
     test_lifecycle_node
@@ -201,6 +217,8 @@ if(1)
     test_generic_pubsub
     test_pub_nsub
     test_generic2
+    test_subscriber
+    test_node_only
     DESTINATION lib/${PROJECT_NAME}
   )
 

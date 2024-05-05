@@ -1,58 +1,44 @@
-// Copyright 2019 Robert Bosch GmbH
-// Copyright 2021 Christophe Bedard
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-#include <memory>
-
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
-#define NODE_NAME "test_publisher"
-#define TOPIC_NAME "the_topic"
-#define QUEUE_DEPTH 10
+constexpr char NODE_NAME[] = "publisher_node";
+constexpr char TOPIC_NAME[] = "/chatter";
 
-class PubNode : public rclcpp::Node
+class PublisherNode : public rclcpp::Node
 {
 public:
-  explicit PubNode(rclcpp::NodeOptions options)
+  explicit PublisherNode(rclcpp::NodeOptions options)
   : Node(NODE_NAME, options)
   {
-    pub_ = this->create_publisher<std_msgs::msg::String>(
+    publisher_ = this->create_publisher<std_msgs::msg::String>(
       TOPIC_NAME,
-      rclcpp::QoS(QUEUE_DEPTH));
+      rclcpp::QoS(10));
+  }
 
-    auto msg = std::make_shared<std_msgs::msg::String>();
-    msg->data = "some random string";
-    pub_->publish(*msg);
+  void start_publishing()
+  {
+    // Publish message periodically
+    publish_timer_ = this->create_wall_timer(
+      std::chrono::milliseconds(1000),
+      [this]() {
+        auto message = std_msgs::msg::String();
+        message.data = "Hello, INTER world!";
+        publisher_->publish(message);
+        RCLCPP_INFO(this->get_logger(), "Publish: '%s'", message.data.c_str());
+      });
   }
 
 private:
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+  rclcpp::TimerBase::SharedPtr publish_timer_;
 };
 
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-
-  rclcpp::executors::SingleThreadedExecutor exec;
-  auto pub_node = std::make_shared<PubNode>(rclcpp::NodeOptions());
-  exec.add_node(pub_node);
-
-  printf("spinning once\n");
-  exec.spin_once();
-
+  auto publisher_node = std::make_shared<PublisherNode>(rclcpp::NodeOptions());
+  publisher_node->start_publishing(); // タイマを開始する
+  rclcpp::spin(publisher_node);
   rclcpp::shutdown();
-
   return 0;
 }
