@@ -1,7 +1,9 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
-constexpr int sub_num = 5;
+constexpr int sub_num = 50;
+constexpr int timer = 50;
+constexpr bool multi = true;
 
 class IntraProcessCommunication : public rclcpp::Node
 {
@@ -13,7 +15,7 @@ public:
     // 複数のsubscriberを作成する
     for (int i = 0; i < sub_num; ++i) {
         auto subscription_callback = [this, i](const std_msgs::msg::String::SharedPtr msg) {
-            RCLCPP_INFO(this->get_logger(), "Subscriber %d received message: '%s'", i, msg->data.c_str());
+            //// RCLCPP_INFO(this->get_logger(), "Subscriber %d received message: '%s'", i, msg->data.c_str());
         };
         subscribers_.push_back(this->create_subscription<std_msgs::msg::String>(
             "topic", rclcpp::QoS(10).transient_local().durability_volatile(), subscription_callback));
@@ -21,7 +23,7 @@ public:
 
     // 一定間隔でメッセージをパブリッシュするタイマーを作成
     timer_ = this->create_wall_timer(
-      std::chrono::milliseconds(1000),
+      std::chrono::milliseconds(timer),
       [this]() {
         auto message = std_msgs::msg::String();
         message.data = "Hello, world!";
@@ -39,7 +41,15 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<IntraProcessCommunication>();
-  rclcpp::spin(node);
+  if (multi) {
+    // MultiThreadedExecutor
+    rclcpp::executors::MultiThreadedExecutor executor;
+    executor.add_node(node);
+    executor.spin();
+  } else {
+    // SingleThreadedExwcutor
+    rclcpp::spin(node);
+  }
   rclcpp::shutdown();
   return 0;
 }

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(rt2_844_test)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+  add_compile_options(-Wall -Wextra -Wpedantic -g)
 endif()
 
 ### Compile options
@@ -198,6 +198,22 @@ if(1)
     ${std_msgs_TARGETS}
   )
 
+  add_executable(test_mpub_nsub
+    src/test_mpub_nsub.cpp
+  )
+  target_link_libraries(test_mpub_nsub PRIVATE
+    rclcpp::rclcpp
+    ${std_msgs_TARGETS}
+  )
+
+  add_executable(test_mpub_nsub_intra
+    src/test_mpub_nsub_intra.cpp
+  )
+  target_link_libraries(test_mpub_nsub_intra PRIVATE
+    rclcpp::rclcpp
+    ${std_msgs_TARGETS}
+  )
+
   install(TARGETS
     test_intra
     test_lifecycle_node
@@ -219,6 +235,8 @@ if(1)
     test_generic2
     test_subscriber
     test_node_only
+    test_mpub_nsub
+    test_mpub_nsub_intra
     DESTINATION lib/${PROJECT_NAME}
   )
 
