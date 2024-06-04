@@ -22,7 +22,11 @@ public:
       rclcpp::QoS(10));
 
     auto callback = [this](std::shared_ptr<rclcpp::SerializedMessage> msg) {
-      RCLCPP_INFO(this->get_logger(), "Received message");
+      auto buffer_address = static_cast<void*>(msg->get_rcl_serialized_message().buffer);
+      std_msgs::msg::String receive_msg;
+      rclcpp::Serialization<std_msgs::msg::String> serializer;
+      serializer.deserialize_message(msg.get(), &receive_msg);
+      RCLCPP_INFO(this->get_logger(), "[%p] Received: '%s'", buffer_address, receive_msg.data.c_str());
     };
 
     generic_subscription_ = this->create_generic_subscription(
@@ -37,12 +41,7 @@ public:
       rclcpp::SerializedMessage serialized_msg;
       rclcpp::Serialization<std_msgs::msg::String> serialization;
       serialization.serialize_message(&msg, &serialized_msg);
-
-      if (generic_publisher_) {
-          generic_publisher_->publish(serialized_msg);
-      } else {
-          RCLCPP_ERROR(this->get_logger(), "Publisher cast to GenericPublisher failed.");
-      }
+      generic_publisher_->publish(serialized_msg);
   }
 
 private:
