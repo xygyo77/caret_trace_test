@@ -214,6 +214,14 @@ if(1)
     ${std_msgs_TARGETS}
   )
 
+  add_executable(test_create_many_nodes
+    src/test_create_many_nodes.cpp
+  )
+  target_link_libraries(test_create_many_nodes PRIVATE
+    rclcpp::rclcpp
+    ${std_msgs_TARGETS}
+  )
+
   install(TARGETS
     test_intra
     test_lifecycle_node
@@ -237,6 +245,7 @@ if(1)
     test_node_only
     test_mpub_nsub
     test_mpub_nsub_intra
+    test_create_many_nodes
     DESTINATION lib/${PROJECT_NAME}
   )
 
