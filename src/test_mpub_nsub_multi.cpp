@@ -49,8 +49,8 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 
-  int num_publishers = 1;
-  int num_subscribers_per_publisher = 2;
+  int num_publishers = 300;
+  int num_subscribers_per_publisher = 5;
   int timer = 100;
 
   if (argc > 1) {
@@ -63,32 +63,36 @@ int main(int argc, char * argv[])
     timer = std::stoi(argv[3]);
   }
 
+  std::vector<std::shared_ptr<rclcpp::Node>> nodes;
   std::vector<std::thread> threads;
+  rclcpp::executors::MultiThreadedExecutor executor;
 
-  for (int i = 0; i < num_publishers; ++i) {
-    auto publisher_node = std::make_shared<PublisherNode>("publisher_" + std::to_string(i), "topic_" + std::to_string(i), timer);
-    threads.emplace_back([publisher_node]() {
-      rclcpp::executors::SingleThreadedExecutor executor;
-      executor.add_node(publisher_node);
+  try {
+    for (int i = 0; i < num_publishers; ++i) {
+      auto publisher_node = std::make_shared<PublisherNode>("pub_" + std::to_string(i), "t_" + std::to_string(i), timer);
+      nodes.push_back(publisher_node);
+
+      for (int j = 0; j < num_subscribers_per_publisher; ++j) {
+        auto subscriber_node = std::make_shared<SubscriberNode>("sub_" + std::to_string(i) + "_" + std::to_string(j), "t_" + std::to_string(i));
+        nodes.push_back(subscriber_node);
+      }
+    }
+
+    for (auto & node : nodes) {
+      executor.add_node(node);
+    }
+
+    threads.emplace_back([&executor]() {
       executor.spin();
-      executor.remove_node(publisher_node);
     });
 
-    for (int j = 0; j < num_subscribers_per_publisher; ++j) {
-      auto subscriber_node = std::make_shared<SubscriberNode>("subscriber_" + std::to_string(i) + "_" + std::to_string(j), "topic_" + std::to_string(i));
-      threads.emplace_back([subscriber_node]() {
-        rclcpp::executors::SingleThreadedExecutor executor;
-        executor.add_node(subscriber_node);
-        executor.spin();
-        executor.remove_node(subscriber_node);
-      });
+    for (auto & thread : threads) {
+      if (thread.joinable()) {
+        thread.join();
+      }
     }
-  }
-
-  for (auto & thread : threads) {
-    if (thread.joinable()) {
-      thread.join();
-    }
+  } catch (const rclcpp::exceptions::RCLError & e) {
+    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Caught exception: %s", e.what());
   }
 
   rclcpp::shutdown();

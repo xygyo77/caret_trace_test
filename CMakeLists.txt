@@ -55,6 +55,14 @@ if(1)
   )
 
 
+  add_executable(test_inter
+    src/test_inter.cpp
+  )
+  target_link_libraries(test_inter PRIVATE
+    rclcpp::rclcpp
+    ${std_msgs_TARGETS}
+  )
+
   add_executable(test_intra
     src/test_intra.cpp
   )
@@ -206,6 +214,14 @@ if(1)
     ${std_msgs_TARGETS}
   )
 
+  add_executable(test_mpub_nsub_multi
+    src/test_mpub_nsub_multi.cpp
+  )
+  target_link_libraries(test_mpub_nsub_multi PRIVATE
+    rclcpp::rclcpp
+    ${std_msgs_TARGETS}
+  )
+
   add_executable(test_mpub_nsub_intra
     src/test_mpub_nsub_intra.cpp
   )
@@ -223,6 +239,7 @@ if(1)
   )
 
   install(TARGETS
+    test_inter
     test_intra
     test_lifecycle_node
     test_lifecycle_client
@@ -244,6 +261,7 @@ if(1)
     test_subscriber
     test_node_only
     test_mpub_nsub
+    test_mpub_nsub_multi
     test_mpub_nsub_intra
     test_create_many_nodes
     DESTINATION lib/${PROJECT_NAME}
